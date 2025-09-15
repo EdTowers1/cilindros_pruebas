@@ -40,20 +40,34 @@ class MovimientoCilindroController extends Controller
 
     public function show($docto)
     {
-        $movimientos = DocumentoHeader::with(['tercero', 'bodies' => function ($q) {
-            $q->orderBy('codigo_articulo');
-        }])->where('docto', $docto)->get();
+        try {
+            $movimiento = DocumentoHeader::with(['tercero', 'bodies' => function ($q) {
+                $q->orderBy('codigo_articulo');
+            }])->where('docto', $docto)->first();
 
-        $movimientos->docto;
-        $movimientos->fecha;
-        $movimientos->codcli;
-        $movimientos->tercero->Nombre_tercero;
-        foreach ($movimientos->bodies as $b) {
-            $b->codigo_articulo;
-            $b->cantidad;
-            $b->precio_docto;
+            if (!$movimiento) {
+                return response()->json(['error' => 'Movimiento no encontrado'], 404);
+            }
+
+            // Acceso seguro a propiedades
+            $movimiento->docto;
+            $movimiento->fecha;
+            $movimiento->codcli;
+            if ($movimiento->tercero) {
+                $movimiento->tercero->Nombre_tercero;
+            }
+            foreach ($movimiento->bodies as $b) {
+                $b->codigo_articulo;
+                $b->cantidad;
+                $b->precio_docto;
+            }
+
+            return response()->json($movimiento);
+        } catch (\Exception $e) {
+            return response()->json(
+                ['error' => 'Error al obtener los movimientos: ' . $e->getMessage()],
+                500
+            );
         }
-
-        return response()->json($movimientos);
     }
 }

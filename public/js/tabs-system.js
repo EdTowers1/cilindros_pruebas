@@ -48,15 +48,15 @@
         state.tabList = document.getElementById("tabList");
         state.tabContent = document.getElementById("tabContent");
 
-        if (!state.tabList || !state.tabContent) {
-            console.error("Elementos del sistema de tabs no encontrados");
-            return;
-        }
+        // if (!state.tabList || !state.tabContent) {
+        //     console.error("Elementos del sistema de tabs no encontrados");
+        //     return;
+        // }
 
-        console.log("Sistema de tabs inicializado:", {
-            tabList: state.tabList,
-            tabContent: state.tabContent,
-        });
+        // console.log("Sistema de tabs inicializado:", {
+        //     tabList: state.tabList,
+        //     tabContent: state.tabContent,
+        // });
 
         // Pre-cargar contenido de módulos
         preLoadTabs();
@@ -99,12 +99,16 @@
      */
     function setupGlobalListeners() {
         // Aviso antes de salir si hay pestañas abiertas
+        // Temporalmente deshabilitado mientras se hacen cambios en las vistas.
+        // Si necesitas volver a activar la alerta, descomenta el bloque siguiente.
+        /*
         window.addEventListener("beforeunload", function (e) {
             if (state.tabList.querySelectorAll(".tab-button").length > 0) {
                 e.preventDefault();
                 e.returnValue = "";
             }
         });
+        */
     }
 
     /**
