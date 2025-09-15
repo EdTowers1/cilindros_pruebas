@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        $this->call([
-            ClienteSeeder::class,
-            CilindroSeeder::class,
-            MovimientoCilindroSeeder::class,
-        ]);
+        // $this->call([
+        //     ClienteSeeder::class,
+        //     CilindroSeeder::class,
+        //     MovimientoCilindroSeeder::class,
+        // ]);
     }
 }

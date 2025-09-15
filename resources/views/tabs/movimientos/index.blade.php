@@ -56,7 +56,7 @@
                                     if (Date.now() - start > 3000) { // 3s timeout
                                         clearInterval(iv);
                                         resolve
-                                    (); // still resolve so Tabulator can try to initialize (it may fallback)
+                                            (); // still resolve so Tabulator can try to initialize (it may fallback)
                                     }
                                 }, 50);
                             });
@@ -70,18 +70,23 @@
                             return;
                         }
 
+                        // Default page size
+                        const defaultPerPage = 10;
+
                         // Initialize Tabulator (columns mapped to MovimientoCilindro attributes)
                         const table = new Tabulator('#movimientos-table', {
                             layout: 'fitColumns',
                             resizableColumns: false,
                             movableColumns: false,
+
+                            // remote data
                             ajaxURL: '/movimientos',
                             ajaxConfig: 'GET',
                             ajaxParams: {
-                                per_page: 10
+                                per_page: defaultPerPage
                             },
                             pagination: 'remote',
-                            paginationSize: 10,
+                            paginationSize: defaultPerPage,
                             paginationDataSent: {
                                 'page': 'page',
                                 'per_page': 'per_page'
@@ -93,12 +98,15 @@
                                 current_page: 'current_page',
                             },
                             ajaxResponse: function(url, params, response) {
-                                return response.data;
+                                return response.data || [];
                             },
+
+                            placeholder: 'No hay movimientos para mostrar',
+
                             // Sorting disabled globally
                             columns: [{
-                                    title: 'ID',
-                                    field: 'id',
+                                    title: 'Código',
+                                    field: 'docto',
                                     width: 70,
                                     hozAlign: 'left',
                                     resizable: false,
@@ -106,63 +114,55 @@
                                 },
                                 {
                                     title: 'Cliente',
-                                    field: 'cliente.nombre',
-                                    widthGrow: 2,
+                                    field: 'tercero.Nombre_tercero',
+                                    width: 300,
                                     resizable: false,
                                     headerSort: false
                                 },
                                 {
                                     title: 'Fecha',
                                     field: 'fecha',
-                                    width: 140,
+                                    widthGrow: 2,
+                                    minWidth: 90, // asegurar espacio mínimo para 'YYYY-MM-DD'
                                     resizable: false,
-                                    headerSort: false
+                                    headerSort: false,
+                                    formatter: function(cell) {
+                                        const v = cell.getValue();
+                                        if (!v) return '';
+                                        // compact regex: capture YYYY-MM-DD at start of string
+                                        // handles: "2025-09-12T00:00:", "2025-09-12", and Date objects (via toISOString)
+                                        try {
+                                            // if it's a Date object, convert to ISO string
+                                            const s = v instanceof Date ? v.toISOString() : String(v);
+                                            const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+                                            return m ? m[1] : '';
+                                        } catch (e) {
+                                            return '';
+                                        }
+                                    }
                                 }
                             ],
+
+                            // optional: show loading overlay while requesting
+                            ajaxRequesting: function(url, params) {
+                                // can be used to attach a loading indicator
+                                return true;
+                            },
+
+                            // optional: handle ajax errors
+                            ajaxError: function(xhr, textStatus, errorThrown) {
+                                console.error('Error al cargar datos:', textStatus, errorThrown);
+                            },
                         });
 
-                        // Handle button clicks inside Tabulator
-                        document.getElementById('movimientos-table').addEventListener('click', function(e) {
-                            const btn = e.target.closest('.ver-detalle-btn');
-                            if (btn) {
-                                const id = btn.getAttribute('data-id');
-                                loadDetalle(id);
-                            }
-                        });
+                        table.setPageSize = function(size) {
+                            this.setData('/movimientos', {
+                                per_page: size,
+                                page: 1
+                            });
+                        };
 
-                        async function loadDetalle(id) {
-                            try {
-                                const res = await fetch(`/movimientos/${id}`, {
-                                    headers: {
-                                        'X-Requested-With': 'XMLHttpRequest',
-                                        'Accept': 'application/json'
-                                    }
-                                });
-                                if (!res.ok) throw new Error('Error al obtener detalle');
-                                const m = await res.json();
-                                renderDetalle(m);
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        }
-
-                        function renderDetalle(m) {
-                            if (!detalle) return;
-                            detalle.innerHTML = `
-                                <div class="p-3">
-                                    <h4 class="font-semibold">Movimiento #${m.id}</h4>
-                                    <p class="text-sm text-gray-600">Tipo: ${m.tipo} — Fecha: ${m.fecha}</p>
-                                    <p class="mt-2">Cliente: ${m.cliente ? m.cliente.nombre : ''}</p>
-                                    <div class="mt-3">
-                                        <h5 class="font-medium">Cilindros</h5>
-                                        <ul class="list-disc pl-5 mt-2 text-sm">
-                                            ${ (m.cilindros && m.cilindros.length) ? m.cilindros.map(c=>`<li>${c.codigo || c.id} — Cant: ${c.pivot ? c.pivot.cantidad : (c.cantidad||'-')}</li>`).join('') : '<li class="text-gray-500">Sin cilindros</li>' }
-                                        </ul>
-                                    </div>
-                                    <div class="mt-3 text-sm text-gray-700">${m.observaciones || ''}</div>
-                                </div>
-                            `;
-                        }
+                        // (Detalle functions removed as requested)
 
                     })();
                 </script>
