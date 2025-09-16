@@ -73,10 +73,20 @@
                         const defaultPerPage = 10;
 
                         // Initialize Tabulator (columns mapped to MovimientoCilindro attributes)
+                        // Altura responsiva: 256px (max-h-64) en móviles, 320px (max-h-80) en sm, 384px (max-h-96) en md+
+                        const movimientosTableHeight = 435;
+                        // Sync detail containers height to match movimientos table
+                        function syncDetailHeights() {
+                            const placeholder = document.getElementById('movimientoPlaceholder');
+                            // Use minHeight so content can grow if needed but baseline matches table
+                            if (placeholder) placeholder.style.minHeight = 365 + 'px';
+                        }
                         const table = new Tabulator('#movimientos-table', {
                             layout: 'fitColumns',
                             resizableColumns: false,
                             movableColumns: false,
+                            selectable: 1, // Permite seleccionar solo una fila a la vez
+                            height: movimientosTableHeight,
 
                             // remote data
                             ajaxURL: '/movimientos',
@@ -161,15 +171,89 @@
                             });
                         };
 
+                        // ensure heights are synced initially
+                        syncDetailHeights();
+
+                        // Keep heights in sync on resize (debounced)
+                        let _resizeTimer = null;
+                        window.addEventListener('resize', function() {
+                            clearTimeout(_resizeTimer);
+                            _resizeTimer = setTimeout(() => {
+                                syncDetailHeights();
+                            }, 120);
+                        });
+
+                        // Show the detalle panel (remove hidden) and collapse intro content
+                        function showMovimientoDetalle() {
+                            const cont = document.getElementById('movimientoDetalle');
+                            if (cont) cont.classList.remove('hidden');
+                            const cilCont = document.getElementById('cilindrosContainer');
+                            if (cilCont) cilCont.classList.remove('hidden');
+
+                            // Hide the placeholder
+                            const placeholder = document.getElementById('movimientoPlaceholder');
+                            if (placeholder) placeholder.classList.add('hidden');
+
+                            // Also hide the intro title and paragraph in the right panel so the detalle occupies the space
+                            try {
+                                const rightPanel = placeholder ? placeholder.closest('.bg-white') : document.querySelector(
+                                    '.lg\\:col-span-8 > .bg-white');
+                                if (rightPanel) {
+                                    // hide header and lead paragraph if present
+                                    const hdr = rightPanel.querySelector('h3');
+                                    const lead = rightPanel.querySelector('p');
+                                    if (hdr) hdr.classList.add('hidden');
+                                    if (lead) lead.classList.add('hidden');
+                                }
+                            } catch (e) {
+                                // silent fallback
+                            }
+
+                            // keep heights in sync after layout change
+                            if (typeof syncDetailHeights === 'function') syncDetailHeights();
+                        }
+
                         // Detectar selección de movimiento y renderizar cilindros
                         table.on('rowClick', function(e, row) {
+                            // Resaltar la fila seleccionada
+                            table.deselectRow();
+                            row.select();
+
                             const data = row.getData();
                             const docto = data.docto;
                             if (!docto) return;
 
+                            // Limpiar tabla de cilindros
                             const cilTable = document.getElementById('cilindros-table');
                             if (cilTable) cilTable.innerHTML = '';
 
+                            // Llenar campos del formulario con los datos del movimiento
+                            // Fecha
+                            if (data.fecha) {
+                                // Extraer solo la parte de la fecha (YYYY-MM-DD)
+                                let fecha = data.fecha;
+                                if (typeof fecha === 'string') {
+                                    const m = fecha.match(/^(\d{4}-\d{2}-\d{2})/);
+                                    fecha = m ? m[1] : fecha;
+                                }
+                                document.getElementById('fecha').value = fecha;
+                            } else {
+                                document.getElementById('fecha').value = '';
+                            }
+                            // Orden
+                            document.getElementById('orden').value = data.docto || '';
+                            // Información del cliente
+                            let infoCliente = '';
+                            if (data.tercero) {
+                                if (data.tercero.codcli) infoCliente += 'Código: ' + data.tercero.codcli;
+                                if (data.tercero.Nombre_tercero) {
+                                    if (infoCliente) infoCliente += '\n';
+                                    infoCliente += 'Cliente: ' + data.tercero.Nombre_tercero;
+                                }
+                            }
+                            document.getElementById('infoCliente').value = infoCliente.trim();
+
+                            // Fetch y render de cilindros
                             fetch(`/movimientos/${docto}`)
                                 .then(r => r.json())
                                 .then(json => {
@@ -181,8 +265,11 @@
                                     if (cilTable) cilTable.innerHTML =
                                         '<div class="text-center text-red-500 py-4">Error al cargar cilindros</div>';
                                 });
+                            // show the detalle form
+                            showMovimientoDetalle();
                         });
 
+                        // (Eliminado: setRowSelection, no existe en Tabulator)
                         let cilindrosTabulator = null;
 
                         function renderCilindrosTabulator(bodies) {
@@ -244,9 +331,19 @@
         <!-- Right column: Main area (8/12) -->
         <div class="lg:col-span-8">
             <div class="bg-white rounded-lg shadow-2xl p-3">
+                <h3 class="text-lg font-semibold mb-2">Panel de Detalles</h3>
+                <p class="text-gray-600">Aquí puedes mostrar detalles del movimiento seleccionado, formularios para
+                    crear/editar movimientos o gráficos de resumen.</p>
+
+                <!-- Placeholder shown before a movement is selected -->
+                <div id="movimientoPlaceholder"
+                    class="mt-3 rounded-md p-3 text-center text-gray-700 bg-white/6 border-2 border-dashed border-gray-400 divide-y divide-gray-300 shadow-sm">
+                    <div class="font-semibold py-3">Área de detalles</div>
+                    <div class="text-sm py-3">Seleccione un movimiento para ver sus detalles.</div>
+                </div>
 
                 <form id="movimientoDetalleForm" action="" class="mt-3">
-                    <div id="movimientoDetalle" class="mt-3">
+                    <div id="movimientoDetalle" class="mt-3 hidden">
                         <div id="movimientoDetalleContent">
                             <div class="border-b border-white/10">
                                 <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -281,7 +378,7 @@
                                         <div>
                                             <label for="infoCliente" class="block text-sm font-medium">Información del
                                                 Cliente</label>
-                                            <textarea id="infoCliente" name="infoCliente" rows="5"
+                                            <textarea id="infoCliente" name="infoCliente" readonly rows="5"
                                                 class="mt-1 block w-full rounded-md bg-white/5 px-3 py-1.5 text-base
                                         outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
                                         focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm resize-none"></textarea>
@@ -292,16 +389,16 @@
                                     <div class="space-y-6">
                                         <div>
                                             <label for="orden" class="block text-sm font-medium">Orden #</label>
-                                            <input id="orden" type="text" name="orden"
+                                            <input id="orden" type="text" name="orden" readonly
                                                 class="mt-1 block w-full rounded-md bg-white/5 px-3 py-1.5 text-base
-                                        outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
-                                        focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
+                                                outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
+                                                focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
                                         </div>
 
                                         <div>
                                             <label for="fecha" class="block text-sm font-medium">Fecha de
                                                 Movimiento</label>
-                                            <input id="fecha" type="date" name="fecha"
+                                            <input id="fecha" type="date" name="fecha" readonly
                                                 class="mt-1 block w-full rounded-md bg-white/5 px-3 py-1.5 text-base
                                         outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
                                         focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
@@ -332,8 +429,8 @@
             </div>
 
 
-            <div class="mt-1 bg-white rounded-lg shadow-2xl p-3">
-                <div id="cilindros-table" class="w-full max-h-64 sm:max-h-80 md:max-h-96 overflow-y-auto"></div>
+            <div id="cilindrosContainer" class="mt-0.5 bg-white rounded-lg shadow-2xl p-3 hidden">
+                <div id="cilindros-table" class="w-full"></div>
             </div>
 
         </div>
