@@ -2,26 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DocumentoBody;
+use App\Http\Filters\MovimientoCilindroFilter;
 use App\Models\DocumentoHeader;
 use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\DB;
 
 class MovimientoCilindroController extends Controller
 {
 
-    public function index(Request $request)
+    public function index(Request $request, MovimientoCilindroFilter $filters)
     {
         try {
             $page    = (int) $request->input('page', 1);
             $perPage = (int) $request->input('per_page', 10);
             $perPage = in_array($perPage, [10, 15, 20]) ? $perPage : 10;
 
-            $paginator = DocumentoHeader::query()
+            // If frontend sends a generic `search` param, map it to the filter key `docto`
+            if ($request->filled('search') && !$request->filled('docto')) {
+                $request->merge(['docto' => $request->input('search')]);
+            }
+
+            // Build base query
+            $query = DocumentoHeader::query()
                 ->select('row_id', 'docto', 'fecha', 'codcli')
-                ->with(['tercero' => fn($q) => $q->select('row_id', 'codcli', 'Nombre_tercero')])
-                ->orderBy('docto', 'desc')
+                ->with(['tercero' => fn($q) => $q->select('row_id', 'codcli', 'Nombre_tercero')]);
+
+            // Apply filters from MovimientoCilindroFilter (methods like `docto` will be applied)
+            $query = $filters->apply($query);
+
+            $paginator = $query->orderBy('docto', 'desc')
                 ->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
