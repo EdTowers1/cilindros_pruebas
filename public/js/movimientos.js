@@ -41,7 +41,7 @@
         }
 
         const defaultPerPage = 10;
-        const movimientosTableHeight = 400;
+        const movimientosTableHeight = 358;
 
         function syncDetailHeights() {
             const placeholder = document.getElementById(
@@ -153,6 +153,9 @@
                 page: 1,
                 search: term,
             });
+            // clear selection state when reloading
+            selectedRowData = null;
+            updateToolbarState();
         }
 
         const searchInput = document.getElementById("movimientosSearch");
@@ -169,6 +172,69 @@
             clearBtn.addEventListener("click", function () {
                 if (searchInput) searchInput.value = "";
                 applySearchTerm("");
+            });
+        }
+
+        // Toolbar buttons
+        const btnCreate = document.getElementById("movimientosCreate");
+        const btnEdit = document.getElementById("movimientosEdit");
+        const btnDelete = document.getElementById("movimientosDelete");
+        const btnRefresh = document.getElementById("movimientosRefresh");
+
+        let selectedRowData = null;
+
+        function updateToolbarState() {
+            const hasSelection = !!selectedRowData;
+            if (btnEdit) btnEdit.disabled = !hasSelection;
+            if (btnDelete) btnDelete.disabled = !hasSelection;
+        }
+
+        if (btnRefresh) {
+            btnRefresh.addEventListener("click", function () {
+                // reload current page
+                table.setData("/movimientos", {
+                    per_page: defaultPerPage,
+                    page: 1,
+                    search: searchInput ? searchInput.value : "",
+                });
+            });
+        }
+
+        if (btnCreate) {
+            btnCreate.addEventListener("click", function () {
+                // Placeholder: show create UI/modal
+                alert("Crear movimiento (implementa modal/form aquí)");
+            });
+        }
+
+        if (btnEdit) {
+            btnEdit.addEventListener("click", function () {
+                if (!selectedRowData)
+                    return alert("Seleccione un movimiento primero");
+                alert(
+                    "Editar movimiento: " +
+                        selectedRowData.docto +
+                        " (implementar)"
+                );
+            });
+        }
+
+        if (btnDelete) {
+            btnDelete.addEventListener("click", function () {
+                if (!selectedRowData)
+                    return alert("Seleccione un movimiento primero");
+                if (
+                    !confirm(
+                        "¿Eliminar movimiento " + selectedRowData.docto + " ?"
+                    )
+                )
+                    return;
+                // Placeholder for delete action (call backend DELETE endpoint)
+                alert(
+                    "Eliminar movimiento: " +
+                        selectedRowData.docto +
+                        " (implementar)"
+                );
             });
         }
 
@@ -209,12 +275,21 @@
         }
 
         table.on("rowClick", function (e, row) {
-            table.deselectRow();
-            row.select();
+            // Always select the clicked row (do not toggle off when clicking again)
+            try {
+                table.deselectRow();
+            } catch (e) {}
+            try {
+                row.select();
+            } catch (e) {}
 
             const data = row.getData();
             const docto = data.docto;
             if (!docto) return;
+
+            // store selection for toolbar actions
+            selectedRowData = row.getData();
+            updateToolbarState();
 
             const cilTable = document.getElementById("cilindros-table");
             if (cilTable) cilTable.innerHTML = "";

@@ -6,26 +6,42 @@
             <div class="bg-white rounded-lg shadow-2xl p-3">
                 <h3 class="text-lg font-semibold mb-2">Historial de Movimientos</h3>
 
-                <!-- Tabulator CSS (simple theme) -->
-                <link href="https://unpkg.com/tabulator-tables@5.5.4/dist/css/tabulator_simple.min.css" rel="stylesheet">
+                <div class="mb-2 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <button id="movimientosCreate" type="button"
+                            class="inline-flex items-center justify-center h-8 w-8 rounded-md bg-green-600 hover:bg-green-500 text-white focus:outline-none"
+                            aria-label="Crear movimiento" title="Crear">
+                            <i class="fa-solid fa-plus text-white text-sm" aria-hidden="true"></i>
+                            <span class="sr-only">Crear movimiento</span>
+                        </button>
 
-                <!-- Luxon (date/time utilities) - required by Tabulator when using date formatters -->
-                <script>
-                    if (!window.luxon) {
-                        const sLux = document.createElement('script');
-                        sLux.src = 'https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js';
-                        sLux.async = false;
-                        document.head.appendChild(sLux);
-                    }
-                </script>
+                        <button id="movimientosEdit" type="button" disabled aria-label="Editar" title="Editar"
+                            class="inline-flex items-center justify-center h-8 w-8 rounded-md bg-blue-600 hover:bg-blue-500 text-white focus:outline-none disabled:opacity-50">
+                            <i class="fa-solid fa-pen text-white text-sm" aria-hidden="true"></i>
+                            <span class="sr-only">Editar movimiento</span>
+                        </button>
 
-                <div class="mb-2">
+                        <button id="movimientosDelete" type="button" disabled aria-label="Eliminar" title="Eliminar"
+                            class="inline-flex items-center justify-center h-8 w-8 rounded-md bg-red-600 hover:bg-red-500 text-white focus:outline-none disabled:opacity-50">
+                            <i class="fa-solid fa-trash text-white text-sm" aria-hidden="true"></i>
+                            <span class="sr-only">Eliminar movimiento</span>
+                        </button>
+
+                        <button id="movimientosRefresh" type="button" aria-label="Refrescar"
+                            title="Refrescar movimientos"
+                            class="inline-flex items-center justify-center h-8 w-8 rounded-md bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 focus:outline-none">
+                            <i class="fa-solid fa-sync text-gray-600 text-sm" aria-hidden="true"></i>
+                            <span class="sr-only">Refrescar movimientos</span>
+                        </button>
+                    </div>
+
                     <div class="flex items-center gap-2">
                         <input id="movimientosSearch" type="text" placeholder="Buscar movimientos..."
-                            class="block w-full rounded-md bg-white/5 px-2 py-1 text-sm placeholder:text-gray-500 focus:outline-2 focus:outline-indigo-500" />
-                        <button id="movimientosClear" type="button"
-                            class="inline-flex items-center px-2 py-1 rounded-md bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 text-sm">
-                            Limpiar
+                            class="block w-full h-8 rounded-md bg-white/5 px-2 text-sm placeholder:text-gray-500 focus:outline-2 focus:outline-indigo-500" />
+                        <button id="movimientosClear" type="button" aria-label="Limpiar" title="Limpiar"
+                            class="inline-flex items-center justify-center h-8 w-8 rounded-md bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 focus:outline-none">
+                            <i class="fa-solid fa-trash text-gray-600 text-sm" aria-hidden="true"></i>
+                            <span class="sr-only">Limpiar búsqueda</span>
                         </button>
                     </div>
                 </div>
