@@ -5,7 +5,7 @@
         </h2>
     </x-slot> --}}
 
-    <div class="py-4">
+    <div class="py-1">
         <div class="max-w-7xl mx-auto sm:px-4 lg:px-6">
             <div class="overflow-hidden shadow-sm sm:rounded-lg">
                 <!-- Tab Navigation -->
@@ -16,7 +16,7 @@
                 </div>
 
                 <!-- Tab Content -->
-                <div id="tabContent" class="p-4 bg-gray-50 min-h-96">
+                <div id="tabContent" class="bg-gray-50 min-h-96">
                     <!-- Tab panes will be added here dynamically -->
                 </div>
             </div>

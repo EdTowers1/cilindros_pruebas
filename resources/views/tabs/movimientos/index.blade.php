@@ -75,7 +75,7 @@
 
                                     <!-- Columna izquierda (Cliente e InfoCliente) -->
                                     <div class="space-y-6">
-                                        <div>
+                                        <div class="hidden">
                                             <label for="cliente" class="block text-sm font-medium">Cliente</label>
                                             <div class="mt-1 flex rounded-md shadow-sm">
                                                 <!-- Input -->
@@ -104,9 +104,7 @@
                                             <label for="infoCliente" class="block text-sm font-medium">Información del
                                                 Cliente</label>
                                             <textarea id="infoCliente" name="infoCliente" readonly rows="5"
-                                                class="mt-1 block w-full rounded-md bg-white/5 px-3 py-1.5 text-base
-                                        outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
-                                        focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm resize-none"></textarea>
+                                                class="mt-1 block w-full rounded-md bg-gray-50 text-gray-700 px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm resize-none"></textarea>
                                         </div>
                                     </div>
 
@@ -115,18 +113,14 @@
                                         <div>
                                             <label for="orden" class="block text-sm font-medium">Orden #</label>
                                             <input id="orden" type="text" name="orden" readonly
-                                                class="mt-1 block w-full rounded-md bg-white/5 px-3 py-1.5 text-base
-                                                outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
-                                                focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
+                                                class="mt-1 block w-full rounded-md bg-gray-50 text-gray-700 px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
                                         </div>
 
                                         <div>
                                             <label for="fecha" class="block text-sm font-medium">Fecha de
                                                 Movimiento</label>
                                             <input id="fecha" type="date" name="fecha" readonly
-                                                class="mt-1 block w-full rounded-md bg-white/5 px-3 py-1.5 text-base
-                                        outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500
-                                        focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
+                                                class="mt-1 block w-full rounded-md bg-gray-50 text-gray-700 px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
                                         </div>
 
                                         <div>
@@ -156,10 +150,36 @@
 
             <div id="cilindrosContainer" class="mt-0.5 bg-white rounded-lg shadow-2xl p-3 hidden">
                 <div id="cilindros-table" class="w-full"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
+                    <div class="col-span-6">
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <!-- Input -->
+                            <input id="cilindro" type="text" name="cilindro"
+                                placeholder="Ingrese el código del cilindro..."
+                                class="block w-full rounded-l-md bg-white/5 px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
+
+                            <!-- Botón -->
+                            <button type="button"
+                                class="inline-flex items-center px-3 py-1.5 rounded-r-md border-l border-gray-300 bg-white text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                aria-label="Buscar cilindro">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <circle cx="11" cy="11" r="7" stroke="#2563eb" stroke-width="2"
+                                        fill="none" />
+                                    <line x1="16.5" y1="16.5" x2="21" y2="21"
+                                        stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
             </div>
 
+
         </div>
-
-
     </div>
-</div>
