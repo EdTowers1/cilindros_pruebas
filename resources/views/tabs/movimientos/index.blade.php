@@ -1,6 +1,6 @@
 <div class="p-4">
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-2">
         <!-- Left column: Table (4/12) -->
         <div class="lg:col-span-4">
             <div class="bg-white rounded-lg shadow-2xl p-3">
@@ -149,9 +149,9 @@
 
 
             <div id="cilindrosContainer" class="mt-0.5 bg-white rounded-lg shadow-2xl p-3 hidden">
-                <div id="cilindros-table" class="w-full"></div>
+                <div id="cilindros-table" class="w-full border border-blue-200 rounded-md"></div>
 
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
+                <div class="grid-cols-1 md:grid-cols-12 gap-4 mt-4 hidden">
                     <div class="col-span-6">
                         <div class="mt-1 flex rounded-md shadow-sm">
                             <!-- Input -->

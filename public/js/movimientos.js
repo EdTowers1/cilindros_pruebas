@@ -182,6 +182,47 @@
         const btnRefresh = document.getElementById("movimientosRefresh");
 
         let selectedRowData = null;
+        let editMode = false;
+
+        function enterEditMode() {
+            editMode = true;
+            // mark and show cliente wrapper
+            const clienteEl = document.getElementById("cliente");
+            if (clienteEl) {
+                const hiddenWrapper = clienteEl.closest(".hidden");
+                if (hiddenWrapper) {
+                    hiddenWrapper.dataset.wasHidden = "true";
+                    hiddenWrapper.classList.remove("hidden");
+                }
+                clienteEl.readOnly = false;
+            }
+            // mark and show cilindro wrapper
+            const cilEl = document.getElementById("cilindro");
+            if (cilEl) {
+                const hiddenWrapper = cilEl.closest(".hidden");
+                if (hiddenWrapper) {
+                    hiddenWrapper.dataset.wasHidden = "true";
+                    hiddenWrapper.classList.remove("hidden");
+                }
+                try { cilEl.focus(); } catch (e) {}
+            }
+        }
+
+        function exitEditMode() {
+            editMode = false;
+            // hide any wrappers we previously un-hidden
+            try {
+                document.querySelectorAll('[data-was-hidden="true"]').forEach(function (el) {
+                    el.classList.add('hidden');
+                    el.removeAttribute('data-was-hidden');
+                });
+            } catch (e) {}
+            // set cliente back to readonly
+            const clienteEl2 = document.getElementById("cliente");
+            if (clienteEl2) clienteEl2.readOnly = true;
+            const cilEl2 = document.getElementById("cilindro");
+            if (cilEl2) try { cilEl2.blur(); } catch (e) {}
+        }
 
         function updateToolbarState() {
             const hasSelection = !!selectedRowData;
@@ -211,11 +252,20 @@
             btnEdit.addEventListener("click", function () {
                 if (!selectedRowData)
                     return alert("Seleccione un movimiento primero");
-                alert(
-                    "Editar movimiento: " +
-                        selectedRowData.docto +
-                        " (implementar)"
-                );
+
+                // populate cliente input before entering edit mode
+                const clienteEl = document.getElementById("cliente");
+                if (clienteEl) {
+                    try {
+                        clienteEl.value = selectedRowData?.tercero?.codcli ?? selectedRowData?.codcli ?? "";
+                    } catch (e) {}
+                }
+
+                // enter edit mode (shows the wrappers and focuses cilindro)
+                enterEditMode();
+
+                // Ensure detail panel is visible
+                try { showMovimientoDetalle(); } catch (e) {}
             });
         }
 
@@ -275,6 +325,9 @@
         }
 
         table.on("rowClick", function (e, row) {
+            // Ensure we exit edit mode when selecting a different row
+            try { exitEditMode(); } catch (e) {}
+
             // Always select the clicked row (do not toggle off when clicking again)
             try {
                 table.deselectRow();
