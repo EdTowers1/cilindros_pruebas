@@ -48,8 +48,6 @@
 
                 <div id="movimientos-table" class="w-full"></div>
 
-                <!-- Load external movimientos script (Tabulator and Luxon handled inside) -->
-                <script src="{{ asset('js/movimientos.js') }}" defer></script>
             </div>
         </div>
 

@@ -23,5 +23,4 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/tabs-system.js') }}"></script>
 </x-app-layout>

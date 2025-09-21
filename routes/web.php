@@ -20,19 +20,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Tab content routes
-    // Route::get('/tab/cilindros', function () {
-    //     if (request()->ajax()) {
-    //         return view('tabs.cilindros');
-    //     }
-    //     return view('dashboard');
-    // })->name('tab.cilindros');
+    Route::get('/tab/cilindros', function () {
+        if (request()->ajax()) {
+            return view('tabs.cilindros');
+        }
+        return view('dashboard');
+    })->name('tab.cilindros');
 
-    // Route::get('/tab/clientes', function () {
-    //     if (request()->ajax()) {
-    //         return view('tabs.clientes');
-    //     }
-    //     return view('dashboard');
-    // })->name('tab.clientes');
+    Route::get('/tab/clientes', function () {
+        if (request()->ajax()) {
+            return view('tabs.clientes');
+        }
+        return view('dashboard');
+    })->name('tab.clientes');
 
     Route::get('/tab/movimientos', function () {
         if (request()->ajax()) {
