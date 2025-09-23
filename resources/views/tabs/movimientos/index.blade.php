@@ -82,7 +82,7 @@
                                                     class="block w-full rounded-l-md bg-white/5 px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
 
                                                 <!-- Botón -->
-                                                <button type="button"
+                                                <button type="button" id="buscarClienteBtn"
                                                     class="inline-flex items-center px-3 py-1.5 rounded-r-md border-l border-gray-300 bg-white text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                     aria-label="Buscar cliente">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
@@ -181,3 +181,5 @@
 
         </div>
     </div>
+
+    @include('tabs.movimientos.ayudas.clientes')

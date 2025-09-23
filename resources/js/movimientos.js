@@ -3,7 +3,7 @@
 // - Exported initializer to be called when the tab content is inserted
 
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import { debounce } from './utils.js';
+import { debounce } from "./utils.js";
 
 export async function initMovimientos() {
     const defaultPerPage = 10;
@@ -72,7 +72,8 @@ export async function initMovimientos() {
                     const v = cell.getValue();
                     if (!v) return "";
                     try {
-                        const s = v instanceof Date ? v.toISOString() : String(v);
+                        const s =
+                            v instanceof Date ? v.toISOString() : String(v);
                         const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
                         return m ? m[1] : "";
                     } catch (e) {
@@ -210,14 +211,17 @@ export async function initMovimientos() {
 
     if (btnEdit) {
         btnEdit.addEventListener("click", function () {
-            if (!selectedRowData) return alert("Seleccione un movimiento primero");
+            if (!selectedRowData)
+                return alert("Seleccione un movimiento primero");
 
             // populate cliente input before entering edit mode
             const clienteEl = document.getElementById("cliente");
             if (clienteEl) {
                 try {
                     clienteEl.value =
-                        (selectedRowData?.tercero?.codcli ?? selectedRowData?.codcli ?? "");
+                        selectedRowData?.tercero?.codcli ??
+                        selectedRowData?.codcli ??
+                        "";
                 } catch (e) {}
             }
 
@@ -233,10 +237,18 @@ export async function initMovimientos() {
 
     if (btnDelete) {
         btnDelete.addEventListener("click", function () {
-            if (!selectedRowData) return alert("Seleccione un movimiento primero");
-            if (!confirm("¿Eliminar movimiento " + selectedRowData.docto + " ?")) return;
+            if (!selectedRowData)
+                return alert("Seleccione un movimiento primero");
+            if (
+                !confirm("¿Eliminar movimiento " + selectedRowData.docto + " ?")
+            )
+                return;
             // Placeholder for delete action (call backend DELETE endpoint)
-            alert("Eliminar movimiento: " + selectedRowData.docto + " (implementar)");
+            alert(
+                "Eliminar movimiento: " +
+                    selectedRowData.docto +
+                    " (implementar)"
+            );
         });
     }
 
@@ -317,7 +329,8 @@ export async function initMovimientos() {
 
         let infoCliente = "";
         if (data.tercero) {
-            if (data.tercero.codcli) infoCliente += "Código: " + data.tercero.codcli;
+            if (data.tercero.codcli)
+                infoCliente += "Código: " + data.tercero.codcli;
             if (data.tercero.Nombre_tercero) {
                 if (infoCliente) infoCliente += "\n";
                 infoCliente += "Cliente: " + data.tercero.Nombre_tercero;
@@ -393,6 +406,68 @@ export async function initMovimientos() {
                 },
             ],
             placeholder: "No hay cilindros para este movimiento",
+        });
+    }
+
+    // Modal de clientes
+    let clientesTabulator = null;
+    const buscarClienteBtn = document.getElementById("buscarClienteBtn");
+    const clienteModal = document.getElementById("clienteModal");
+    const cerrarClienteModal = document.getElementById("cerrarClienteModal");
+
+    if (buscarClienteBtn && clienteModal && cerrarClienteModal) {
+        buscarClienteBtn.addEventListener("click", async () => {
+            clienteModal.classList.remove("hidden");
+            try {
+                const response = await fetch("/terceros");
+                const data = await response.json();
+                const clientes = data.data; // Asumiendo que viene en data
+
+                if (clientesTabulator) {
+                    clientesTabulator.destroy();
+                }
+
+                clientesTabulator = new Tabulator("#clientesTable", {
+                    data: clientes,
+                    layout: "fitColumns",
+                    resizableColumns: false,
+                    movableColumns: false,
+                    pagination: false,
+                    height: 300,
+                    columns: [
+                        {
+                            title: "Código",
+                            field: "codcli",
+                            headerSort: false,
+                            hozAlign: "left",
+                        },
+                        {
+                            title: "Nombre",
+                            field: "Nombre_tercero",
+                            headerSort: false,
+                            hozAlign: "left",
+                        },
+                    ],
+                    placeholder: "No hay clientes para mostrar",
+                });
+
+                clientesTabulator.on("cellClick", function (e, cell) {
+                    if (e.target.classList.contains("seleccionarCliente")) {
+                        const rowData = cell.getRow().getData();
+                        document.getElementById("cliente").value =
+                            rowData.codcli;
+                        document.getElementById("infoCliente").value =
+                            rowData.Nombre_tercero;
+                        clienteModal.classList.add("hidden");
+                    }
+                });
+            } catch (error) {
+                console.error("Error cargando clientes:", error);
+            }
+        });
+
+        cerrarClienteModal.addEventListener("click", () => {
+            clienteModal.classList.add("hidden");
         });
     }
 }

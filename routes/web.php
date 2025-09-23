@@ -22,14 +22,14 @@ Route::middleware('auth')->group(function () {
     // Tab content routes
     Route::get('/tab/cilindros', function () {
         if (request()->ajax()) {
-            return view('tabs.cilindros');
+            return view('tabs.cilindros.index');
         }
         return view('dashboard');
     })->name('tab.cilindros');
 
     Route::get('/tab/clientes', function () {
         if (request()->ajax()) {
-            return view('tabs.clientes');
+            return view('tabs.clientes.index');
         }
         return view('dashboard');
     })->name('tab.clientes');
