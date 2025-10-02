@@ -1,6 +1,6 @@
 /**
  * Módulo de Modal de Clientes
- * 
+ *
  * Gestiona el modal de búsqueda y selección de clientes.
  * Muestra una tabla con todos los clientes disponibles y permite
  * seleccionar uno para autocompletar los campos del formulario.
@@ -17,12 +17,12 @@ let clientesTabulator = null;
 
 /**
  * Configura el modal de búsqueda de clientes
- * 
+ *
  * Inicializa los event listeners para:
  * - Abrir modal y cargar lista de clientes
  * - Seleccionar un cliente de la lista
  * - Cerrar el modal
- * 
+ *
  * @example
  * import { setupClientesModal } from './clientesModal.js';
  * setupClientesModal();
@@ -40,7 +40,7 @@ export function setupClientesModal() {
 
     /**
      * Event handler para abrir el modal de clientes
-     * 
+     *
      * Acciones:
      * 1. Muestra el modal
      * 2. Carga la lista de clientes desde el servidor
@@ -50,7 +50,7 @@ export function setupClientesModal() {
     buscarClienteBtn.addEventListener("click", async () => {
         // Mostrar el modal
         clienteModal.classList.remove("hidden");
-        
+
         try {
             // Cargar lista de clientes desde el servidor
             const response = await fetch("/terceros");
@@ -98,7 +98,7 @@ export function setupClientesModal() {
 
             /**
              * Event handler para clic en una fila de la tabla
-             * 
+             *
              * Al hacer clic en un cliente:
              * 1. Obtiene los datos del cliente
              * 2. Llena el campo de código de cliente
@@ -107,33 +107,54 @@ export function setupClientesModal() {
              */
             clientesTabulator.on("rowClick", function (e, row) {
                 const rowData = row.getData();
-                const clienteEl = document.getElementById("cliente");
-                const infoClienteEl = document.getElementById("infoCliente");
-                
-                // Llenar campo de código de cliente
-                if (clienteEl) {
-                    clienteEl.value = rowData.codcli || '';
-                }
-                
-                // Llenar campo de información del cliente (formato multilínea)
-                if (infoClienteEl) {
-                    let info = '';
-                    if (rowData.codcli) info += 'Código: ' + rowData.codcli;
-                    if (rowData.Nombre_tercero) {
-                        if (info) info += '\n'; // Salto de línea si ya hay código
-                        info += 'Cliente: ' + rowData.Nombre_tercero;
+
+                // Verificar si estamos en contexto de creación
+                if (window.createModalContext) {
+                    // Llamar al handler del modal de creación
+                    if (
+                        typeof window.handleCreateClienteSelection ===
+                        "function"
+                    ) {
+                        window.handleCreateClienteSelection({
+                            codcli: rowData.codcli,
+                            nit: rowData.codcli,
+                            nombre: rowData.Nombre_tercero,
+                            direccion: rowData.direccion || "",
+                        });
                     }
-                    infoClienteEl.value = info;
+                    window.createModalContext = false; // Reset flag
+                } else {
+                    // Contexto de edición (comportamiento original)
+                    const clienteEl = document.getElementById("cliente");
+                    const infoClienteEl =
+                        document.getElementById("infoCliente");
+
+                    // Llenar campo de código de cliente
+                    if (clienteEl) {
+                        clienteEl.value = rowData.codcli || "";
+                    }
+
+                    // Llenar campo de información del cliente (formato multilínea)
+                    if (infoClienteEl) {
+                        let info = "";
+                        if (rowData.codcli) info += "Código: " + rowData.codcli;
+                        if (rowData.Nombre_tercero) {
+                            if (info) info += "\n"; // Salto de línea si ya hay código
+                            info += "Cliente: " + rowData.Nombre_tercero;
+                        }
+                        infoClienteEl.value = info;
+                    }
                 }
-                
+
                 // Cerrar el modal automáticamente después de seleccionar
                 clienteModal.classList.add("hidden");
             });
-
         } catch (error) {
             // Manejar errores en la carga de clientes
             console.error("Error cargando clientes:", error);
-            alert("Error al cargar la lista de clientes. Por favor, intente nuevamente.");
+            alert(
+                "Error al cargar la lista de clientes. Por favor, intente nuevamente."
+            );
         }
     });
 
@@ -147,7 +168,7 @@ export function setupClientesModal() {
 
     /**
      * Event handler para cerrar modal al hacer clic fuera de él
-     * 
+     *
      * Mejora la UX permitiendo cerrar el modal haciendo clic en el overlay oscuro.
      * Solo cierra si el clic es directamente en el modal (overlay),
      * no en su contenido interno.

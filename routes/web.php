@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     // MovimientoCilindro API (JSON) - protegido por auth
     Route::prefix('movimientos')->controller(MovimientoCilindroController::class)->group(function () {
         Route::get('/', 'index')->name('movimientos.index');
+        Route::get('/consecutivo', 'getConsecutivo')->name('movimientos.consecutivo');
         Route::get('/{movimiento}', 'show')->name('movimientos.show');
         Route::post('/', 'store')->name('movimientos.store');
         Route::put('/{movimiento}', 'update')->name('movimientos.update');
@@ -53,8 +54,6 @@ Route::middleware('auth')->group(function () {
     Route::prefix('terceros')->controller(TerceroController::class)->group(function () {
         Route::get('/', 'index')->name('api.terceros.index');
     });
-
-
 });
 
 require __DIR__ . '/auth.php';

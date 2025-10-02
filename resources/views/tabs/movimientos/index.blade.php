@@ -121,7 +121,7 @@
                                                 class="mt-1 block w-full rounded-md bg-gray-50 text-gray-700 px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
                                         </div>
 
-                                        <div>
+                                        {{-- <div>
                                             <label for="tipoMovimiento" class="block text-sm font-medium">Tipo de
                                                 Movimiento</label>
                                             <select id="tipoMovimiento" name="tipoMovimiento"
@@ -135,7 +135,7 @@
                                                 <option value="Ajuste">Ajuste</option>
                                                 <option value="Otro">Otro</option>
                                             </select>
-                                        </div>
+                                        </div> --}}
                                     </div>
 
                                 </div>
@@ -183,3 +183,4 @@
     </div>
 
     @include('tabs.movimientos.ayudas.clientes')
+    @include('tabs.movimientos.create-modal')

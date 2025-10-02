@@ -23,14 +23,14 @@ export function syncDetailHeights() {
 /**
  * Activa el modo de edición del movimiento
  *
- * Muestra campos ocultos (cliente, cilindro) y los hace editables.
+ * Muestra solo el campo de cilindro (el campo de cliente NO se muestra en modo edición).
  * Marca los wrappers con data-was-hidden para poder restaurarlos después.
  *
  * Acciones:
- * 1. Busca wrappers ocultos de los campos cliente y cilindro
- * 2. Los marca con data-was-hidden="true" para restaurarlos después
- * 3. Remueve la clase "hidden" para mostrarlos
- * 4. Hace el campo cliente editable
+ * 1. Busca el wrapper oculto del campo cilindro
+ * 2. Lo marca con data-was-hidden="true" para restaurarlo después
+ * 3. Remueve la clase "hidden" para mostrarlo
+ * 4. NO muestra el campo de cliente (permanece oculto)
  * 5. Enfoca el campo cilindro
  *
  * @example
@@ -38,9 +38,6 @@ export function syncDetailHeights() {
  * enterEditMode();
  */
 export function enterEditMode() {
-    const clienteEl = document.getElementById("cliente");
-    const cilEl = document.getElementById("cilindro");
-
     /**
      * Muestra un wrapper oculto y lo marca para restaurarlo después
      *
@@ -59,10 +56,8 @@ export function enterEditMode() {
         return el;
     };
 
-    // Mostrar y habilitar campo de cliente
-    toggleWrapper("cliente") && (clienteEl.readOnly = false);
-
-    // Mostrar campo de cilindro y enfocarlo
+    // Solo mostrar campo de cilindro y enfocarlo
+    // El campo de cliente NO se muestra en modo edición
     toggleWrapper("cilindro")?.focus();
 }
 
@@ -85,12 +80,10 @@ export function enterEditMode() {
  */
 export function exitEditMode() {
     // Buscar y ocultar todos los wrappers que fueron mostrados
-    document
-        .querySelectorAll('[data-was-hidden="true"]')
-        .forEach((el) => {
-            el.classList.add("hidden"); // Ocultar
-            el.removeAttribute("data-was-hidden"); // Limpiar marca
-        });
+    document.querySelectorAll('[data-was-hidden="true"]').forEach((el) => {
+        el.classList.add("hidden"); // Ocultar
+        el.removeAttribute("data-was-hidden"); // Limpiar marca
+    });
 
     // Poner campo de cliente en modo solo lectura
     const clienteEl = document.getElementById("cliente");

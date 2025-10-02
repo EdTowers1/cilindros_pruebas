@@ -4,9 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StoreMovimientoRequest;
+use App\Services\MovimientoService;
 
 class MovimientoCilindroController extends Controller
 {
+    /**
+     * Service para manejar la lógica de negocio
+     */
+    protected MovimientoService $movimientoService;
+
+    /**
+     * Constructor del controlador
+     */
+    public function __construct(MovimientoService $movimientoService)
+    {
+        $this->movimientoService = $movimientoService;
+    }
 
     public function index(Request $request)
     {
@@ -93,4 +107,56 @@ class MovimientoCilindroController extends Controller
         }
     }
 
+    /**
+     * Crear un nuevo movimiento de cilindros
+     *
+     * @param StoreMovimientoRequest $request Datos validados del movimiento
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(StoreMovimientoRequest $request)
+    {
+        try {
+            // Delegar la lógica de negocio al servicio
+            $movimiento = $this->movimientoService->createMovimiento($request->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Movimiento creado exitosamente',
+                'data' => $movimiento
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el movimiento',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener el número consecutivo para un nuevo movimiento
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getConsecutivo()
+    {
+        try {
+            $consecutivo = $this->movimientoService->getConsecutivo();
+            $fechaActual = now()->format('Y-m-d');
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'consecutivo' => $consecutivo,
+                    'fecha' => $fechaActual
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el consecutivo',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
