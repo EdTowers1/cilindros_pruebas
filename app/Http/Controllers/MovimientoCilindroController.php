@@ -2,41 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Filters\MovimientoCilindroFilter;
-use App\Models\DocumentoHeader;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MovimientoCilindroController extends Controller
 {
 
-    public function index(Request $request, MovimientoCilindroFilter $filters)
+    public function index(Request $request)
     {
         try {
-            $page    = (int) $request->input('page', 1);
+            $page = (int) $request->input('page', 1);
             $perPage = (int) $request->input('per_page', 10);
-            $perPage = in_array($perPage, [10, 15, 20]) ? $perPage : 10;
+            // $perPage = in_array($perPage, [10, 15, 20]) ? $perPage : 10;
 
             // If frontend sends a generic `search` param, map it to the filter key `docto`
+            $searchData = '';
             if ($request->filled('search') && !$request->filled('docto')) {
-                $request->merge(['docto' => $request->input('search')]);
+                $searchData = $request->input('search');
+            } elseif ($request->filled('docto')) {
+                $searchData = $request->input('docto');
             }
 
-            // Build base query
-            $query = DocumentoHeader::query()
-                ->select('row_id', 'docto', 'fecha', 'codcli')
-                ->with(['tercero' => fn($q) => $q->select('row_id', 'codcli', 'Nombre_tercero')]);
+            // Call stored procedure
+            $params = [
+                $perPage,      // nPageSize
+                $page,         // nPageNumber
+                'INC',         // cTransac
+                '01',          // cSucursal
+                $searchData,   // cSearchData
+                0,             // nSearExact
+                'docto',       // cSortBy
+                'D',           // cSortDirection (D for desc)
+            ];
 
-            // Apply filters from MovimientoCilindroFilter (methods like `docto` will be applied)
-            $query = $filters->apply($query);
+            $results = DB::select('CALL usp_documentos_lista(?, ?, ?, ?, ?, ?, ?, ?, @page_count)', $params);
 
-            $paginator = $query->orderBy('docto', 'desc')
-                ->paginate($perPage, ['*'], 'page', $page);
+            // Get the output parameter @page_count (assuming it's total pages)
+            $pageCountResult = DB::select('SELECT @page_count as page_count');
+            $totalPages = $pageCountResult[0]->page_count ?? 1;
+
+            // Approximate total records (totalPages * perPage), but this may not be accurate if last page is partial
+            $totalRecords = $totalPages * $perPage;
 
             return response()->json([
-                'data'        => $paginator->items(),
-                'last_page'   => $paginator->lastPage(),
-                'total'       => $paginator->total(),
-                'current_page' => $paginator->currentPage(),
+                'data' => $results,
+                'last_page' => $totalPages,
+                'total' => $totalRecords,
+                'current_page' => $page,
             ]);
         } catch (\Exception $e) {
             return response()->json(
@@ -49,26 +61,28 @@ class MovimientoCilindroController extends Controller
     public function show($docto)
     {
         try {
-            $movimiento = DocumentoHeader::with(['tercero', 'bodies' => function ($q) {
-                $q->orderBy('codigo_articulo');
-            }])->where('docto', $docto)->first();
+            $params = [
+                '01',          // cSucursal
+                'INC',         // cTransac
+                $docto,       // docto
+            ];
 
-            if (!$movimiento) {
-                return response()->json(['error' => 'Movimiento no encontrado'], 404);
-            }
+            // Get bodies via stored procedure
+            $bodies = DB::select('CALL usp_documentos_body_lista(?, ?, ?)', $params);
 
-            // Acceso seguro a propiedades
-            $movimiento->docto;
-            $movimiento->fecha;
-            $movimiento->codcli;
-            if ($movimiento->tercero) {
-                $movimiento->tercero->Nombre_tercero;
-            }
-            foreach ($movimiento->bodies as $b) {
-                $b->codigo_articulo;
-                $b->cantidad;
-                $b->precio_docto;
-            }
+            $header = $bodies[0];
+
+            // Construct the movimiento object
+            $movimiento = [
+                'docto' => $header->docto,
+                'fecha' => $header->fecha,
+                'codcli' => $header->nit_tercero,
+                'tercero' => [
+                    'nit' => $header->nit_tercero,
+                    'nombre_tercero' => $header->nombre_tercero,
+                ],
+                'bodies' => $bodies,
+            ];
 
             return response()->json($movimiento);
         } catch (\Exception $e) {
@@ -79,5 +93,4 @@ class MovimientoCilindroController extends Controller
         }
     }
 
-    
 }

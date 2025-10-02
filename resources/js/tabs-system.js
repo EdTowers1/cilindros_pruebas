@@ -1,4 +1,4 @@
-import { initMovimientos } from './movimientos.js';
+import { initMovimientos } from './modules/movimientos/index.js';
 
 /**
  * Sistema de Pestañas Dinámicas - Cilindros App
@@ -333,7 +333,7 @@ function loadTabContent(url, pane, btnTab) {
             .then(function (res) {
                 if (!res.ok)
                     throw new Error(
-                        "HTTP " + res.status + " - " + res.statusText   
+                        "HTTP " + res.status + " - " + res.statusText
                     );
                 return res.text();
             })
