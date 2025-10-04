@@ -43,18 +43,22 @@ export function createMovimientosTable() {
         resizableColumns: false,
         movableColumns: false,
         selectable: 1,
-        height: movimientosTableHeight,
+        height: movimientosTableHeight, // Aumentado para dar espacio a la paginación
         ajaxURL: "/movimientos",
         ajaxConfig: "GET",
         ajaxParams: {
             per_page: defaultPerPage,
             search: "",
         },
-        pagination: "remote",
+        pagination: true, // Cambiado a true para asegurar que se active la paginación
+        paginationMode: "remote", // Modo remoto explícito
         paginationSize: defaultPerPage,
+        // paginationSizeSelector: [10, 15, 20, 50], // Selector de tamaño de página
+        paginationButtonCount: 3, // Cantidad de botones de página visibles
+        // paginationCounter: "rows", // Muestra "x-y de z registros"
         paginationDataSent: {
             page: "page",
-            per_page: "per_page",
+            size: "per_page", // Asegúrate que esto coincida con lo que espera tu backend
         },
         paginationDataReceived: {
             data: "data",
@@ -72,22 +76,40 @@ export function createMovimientosTable() {
          * @param {string} url - URL de la petición AJAX
          * @param {Object} params - Parámetros enviados en la petición
          * @param {Object} response - Respuesta del servidor
-         * @param {Array} response.data - Array de movimientos
-         * @returns {Array} Array de movimientos con datos normalizados
+         * @returns {Object} Objeto con datos formateados para Tabulator
          */
         ajaxResponse: function (url, params, response) {
-            const rows = response.data || [];
-            return rows.map((r) => {
-                // Normalizar nombre_tercero buscando en múltiples ubicaciones posibles
-                // Prioridad: r.nombre_tercero > r.tercero.Nombre_tercero > r.tercero.nombre_tercero > r.nomcomer
-                r.nombre_tercero = r.nombre_tercero || (r.tercero && (r.tercero.Nombre_tercero || r.tercero.nombre_tercero)) || r.nomcomer || '';
+            // Verificar que la respuesta sea un objeto y contenga data
+            if (!response || typeof response !== 'object') {
+                console.error("Respuesta de servidor inválida:", response);
+                return { data: [] }; // Devolver array vacío como fallback
+            }
 
-                // Normalizar codcli buscando en múltiples ubicaciones posibles
-                // Prioridad: r.codcli > r.tercero.codcli > r.nit_tercero
-                r.codcli = r.codcli || (r.tercero && r.tercero.codcli) || r.nit_tercero || '';
+            // Verificar que data exista y sea un array
+            const rows = Array.isArray(response.data) ? response.data : [];
+
+            // Procesar los datos si existen
+            const processedRows = rows.map((r) => {
+                // Normalizar nombre_tercero
+                r.nombre_tercero = r.nombre_tercero ||
+                    (r.tercero && (r.tercero.Nombre_tercero || r.tercero.nombre_tercero)) ||
+                    r.nomcomer || '';
+
+                // Normalizar codcli
+                r.codcli = r.codcli ||
+                    (r.tercero && r.tercero.codcli) ||
+                    r.nit_tercero || '';
 
                 return r;
             });
+
+            // Devolver el objeto completo con los datos procesados
+            return {
+                data: processedRows,
+                last_page: response.last_page || 1,
+                total: response.total || rows.length,
+                current_page: response.current_page || 1
+            };
         },
         placeholder: "No hay movimientos para mostrar",
         columns: [
@@ -138,11 +160,13 @@ export function createMovimientosTable() {
                 },
             },
         ],
-        ajaxRequesting: function () {
+        ajaxRequesting: function (url, params) {
+            console.log("Solicitando datos:", url, params);
             return true;
         },
         ajaxError: function (xhr, textStatus, errorThrown) {
-            console.error("Error al cargar datos:", textStatus, errorThrown);
+            console.error("Error en solicitud AJAX:", textStatus, errorThrown);
+            return false; // Prevenir que Tabulator muestre su error nativo
         },
     });
 }
